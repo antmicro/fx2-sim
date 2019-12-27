@@ -52,8 +52,8 @@ Make sure to install requred system packages, on Ubuntu:
     sudo apt install libevent-dev libjson-c-dev
 
 Now you can run the simulation:
-    cd fpga-ecosystem-litex/fx2/
+    cd THIS_REPO/fx2/
     make -C test
     python fx2/sim.py test/simple.bin
-    gtkwave fx2/build/dut.vcd
+    gtkwave build/dut.vcd
 EOF

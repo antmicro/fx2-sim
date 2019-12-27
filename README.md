@@ -20,4 +20,5 @@ python fx2/sim.py test/simple.bin
 
 To build all the example binaries, run `make -C test/`.
 
-Results can be viewed using GTKWave `gtkwave fx2/build/dut.vcd`.
+Results can be viewed using GTKWave `gtkwave build/dut.vcd`,
+or starting from already prepared GTKWave save `gtkwave sim.gtkw`.

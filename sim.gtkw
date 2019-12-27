@@ -1,0 +1,255 @@
+[*]
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Fri Dec 27 15:34:55 2019
+[*]
+[dumpfile] "build/dut.vcd"
+[savefile] "sim.gtkw"
+[timestart] 0
+[size] 2560 1389
+[pos] -1 -1
+*-6.000000 21500 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.dut.
+[treeopen] TOP.dut.oc8051_top.
+[treeopen] TOP.dut.oc8051_top.oc8051_alu1.
+[treeopen] TOP.dut.oc8051_top.oc8051_ram_top1.
+[sst_width] 312
+[signals_width] 251
+[sst_expanded] 1
+[sst_vpaned_height] 455
+@200
+-alu src sel
+@28
+TOP.dut.oc8051_top.oc8051_alu_src_sel1.rst
+@22
+TOP.dut.oc8051_top.oc8051_alu_src_sel1.op1[7:0]
+TOP.dut.oc8051_top.oc8051_alu_src_sel1.op2[7:0]
+TOP.dut.oc8051_top.oc8051_alu_src_sel1.op3[7:0]
+[color] 3
+TOP.dut.oc8051_top.oc8051_alu_src_sel1.op1_r[7:0]
+[color] 3
+TOP.dut.oc8051_top.oc8051_alu_src_sel1.op2_r[7:0]
+[color] 3
+TOP.dut.oc8051_top.oc8051_alu_src_sel1.op3_r[7:0]
+[color] 2
+TOP.dut.oc8051_top.oc8051_alu_src_sel1.pc[15:0]
+@28
+TOP.dut.oc8051_top.oc8051_alu_src_sel1.clk
+@200
+-Decoder
+@28
+[color] 7
+TOP.dut.oc8051_top.oc8051_decoder1.state[1:0]
+TOP.dut.oc8051_top.oc8051_decoder1.wait_data
+@22
+[color] 3
+TOP.dut.oc8051_top.oc8051_decoder1.op_cur[7:0]
+@2022
+[color] 7
+^1 test/gtkwave-filters/op_code.txt
+TOP.dut.oc8051_top.oc8051_decoder1.op[7:0]
+@22
+[color] 7
+TOP.dut.oc8051_top.oc8051_decoder1.op[7:0]
+[color] 3
+TOP.dut.oc8051_top.oc8051_decoder1.op_in[7:0]
+@28
+TOP.dut.oc8051_top.oc8051_decoder1.pc_sel[2:0]
+TOP.dut.oc8051_top.oc8051_decoder1.ram_rd_sel[2:0]
+TOP.dut.oc8051_top.oc8051_decoder1.ram_wr_sel[2:0]
+TOP.dut.oc8051_top.oc8051_decoder1.mem_act[2:0]
+@200
+-Memory interface
+@22
+[color] 3
+TOP.dut.oc8051_top.oc8051_memory_interface1.op1_out[7:0]
+[color] 3
+TOP.dut.oc8051_top.oc8051_memory_interface1.op2_out[7:0]
+[color] 3
+TOP.dut.oc8051_top.oc8051_memory_interface1.op3_out[7:0]
+TOP.dut.oc8051_top.oc8051_memory_interface1.op1[7:0]
+TOP.dut.oc8051_top.oc8051_memory_interface1.op2[7:0]
+TOP.dut.oc8051_top.oc8051_memory_interface1.op3[7:0]
+[color] 3
+TOP.dut.oc8051_top.oc8051_memory_interface1.op1_xt[7:0]
+[color] 3
+TOP.dut.oc8051_top.oc8051_memory_interface1.op2_xt[7:0]
+[color] 3
+TOP.dut.oc8051_top.oc8051_memory_interface1.op3_xt[7:0]
+@28
+TOP.dut.oc8051_top.oc8051_memory_interface1.pc_wr_sel[2:0]
+@22
+[color] 2
+TOP.dut.oc8051_top.oc8051_memory_interface1.pc_buf[15:0]
+TOP.dut.oc8051_top.oc8051_memory_interface1.pc_out[15:0]
+[color] 2
+TOP.dut.oc8051_top.oc8051_memory_interface1.pc[15:0]
+@28
+[color] 2
+TOP.dut.oc8051_top.oc8051_memory_interface1.inc_pc
+TOP.dut.oc8051_top.oc8051_memory_interface1.inc_pc_r
+TOP.dut.oc8051_top.oc8051_memory_interface1.rd
+TOP.dut.oc8051_top.oc8051_memory_interface1.istb_t
+TOP.dut.oc8051_top.oc8051_memory_interface1.istb
+@c00022
+[color] 1
+TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+@28
+(0)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(1)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(2)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(3)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(4)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(5)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(6)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(7)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(8)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(9)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(10)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(11)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(12)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(13)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(14)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(15)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(16)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(17)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(18)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(19)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(20)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(21)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(22)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(23)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(24)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(25)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(26)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(27)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(28)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(29)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(30)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+(31)TOP.dut.oc8051_top.oc8051_memory_interface1.idat_old[31:0]
+@1401200
+-group_end
+@22
+[color] 1
+TOP.dut.oc8051_top.oc8051_memory_interface1.idat_cur[31:0]
+[color] 1
+TOP.dut.oc8051_top.oc8051_memory_interface1.idat_i[31:0]
+[color] 1
+TOP.dut.oc8051_top.oc8051_memory_interface1.idat_ir[23:0]
+@28
+TOP.dut.oc8051_top.oc8051_memory_interface1.iack_i
+TOP.dut.oc8051_top.oc8051_memory_interface1.mem_wait
+TOP.dut.oc8051_top.oc8051_memory_interface1.mem_act[2:0]
+TOP.dut.oc8051_top.oc8051_memory_interface1.pc_wr_r2
+TOP.dut.oc8051_top.oc8051_memory_interface1.pc_wr_r
+TOP.dut.oc8051_top.oc8051_memory_interface1.pc_wr
+TOP.dut.oc8051_top.oc8051_memory_interface1.inc_pc_r
+TOP.dut.oc8051_top.oc8051_memory_interface1.pc_wait
+@24
+[color] 5
+TOP.dut.oc8051_top.oc8051_memory_interface1.op_pos[2:0]
+@28
+[color] 5
+TOP.dut.oc8051_top.oc8051_memory_interface1.op_pos[2:0]
+@24
+TOP.dut.oc8051_top.oc8051_memory_interface1.op_length[1:0]
+@28
+TOP.dut.oc8051_top.oc8051_memory_interface1.rd
+@22
+TOP.dut.oc8051_top.oc8051_memory_interface1.iadr_o[15:0]
+TOP.dut.oc8051_top.oc8051_memory_interface1.iadr_t[15:0]
+@200
+-SFRs
+@22
+TOP.dut.oc8051_top.oc8051_sfr1.acc[7:0]
+@200
+-Wisbone to Litex
+@28
+TOP.dut.oc8051_top.wb_rst_i
+TOP.dut.oc8051_top.wb_clk_i
+@200
+-   (instructions)
+@22
+[color] 1
+TOP.dut.oc8051_top.wbi_adr_o[15:0]
+[color] 1
+TOP.dut.oc8051_top.wbi_dat_i[31:0]
+@28
+TOP.dut.oc8051_top.wbi_cyc_o
+TOP.dut.oc8051_top.wbi_stb_o
+TOP.dut.oc8051_top.wbi_ack_i
+@200
+-    (data)
+@22
+TOP.dut.oc8051_top.wbd_adr_o[15:0]
+TOP.dut.oc8051_top.wbd_dat_i[7:0]
+TOP.dut.oc8051_top.wbd_dat_o[7:0]
+@28
+TOP.dut.oc8051_top.wbd_cyc_o
+TOP.dut.oc8051_top.wbd_stb_o
+TOP.dut.oc8051_top.wbd_we_o
+TOP.dut.oc8051_top.wbd_ack_i
+@200
+-To memory
+@28
+TOP.dut.oc8051_top.wbd_err_i
+TOP.dut.sys_clk_1
+@200
+-ALU
+@22
+TOP.dut.oc8051_top.oc8051_alu1.src1[7:0]
+TOP.dut.oc8051_top.oc8051_alu1.src2[7:0]
+TOP.dut.oc8051_top.oc8051_alu1.src3[7:0]
+@800022
+TOP.dut.oc8051_top.oc8051_alu1.op_code[3:0]
+@28
+(0)TOP.dut.oc8051_top.oc8051_alu1.op_code[3:0]
+(1)TOP.dut.oc8051_top.oc8051_alu1.op_code[3:0]
+(2)TOP.dut.oc8051_top.oc8051_alu1.op_code[3:0]
+(3)TOP.dut.oc8051_top.oc8051_alu1.op_code[3:0]
+@1001200
+-group_end
+@200
+-Internal RAM
+@28
+TOP.dut.oc8051_top.oc8051_ram_top1.bit_addr
+TOP.dut.oc8051_top.oc8051_ram_top1.bit_addr_r
+TOP.dut.oc8051_top.oc8051_ram_top1.bit_data_in
+TOP.dut.oc8051_top.oc8051_ram_top1.bit_data_out
+TOP.dut.oc8051_top.oc8051_ram_top1.bit_select[2:0]
+@22
+TOP.dut.oc8051_top.oc8051_ram_top1.ram_aw[31:0]
+TOP.dut.oc8051_top.oc8051_ram_top1.rd_addr[7:0]
+TOP.dut.oc8051_top.oc8051_ram_top1.rd_data[7:0]
+@28
+TOP.dut.oc8051_top.oc8051_ram_top1.rd_en
+TOP.dut.oc8051_top.oc8051_ram_top1.wr
+@22
+TOP.dut.oc8051_top.oc8051_ram_top1.wr_addr[7:0]
+TOP.dut.oc8051_top.oc8051_ram_top1.wr_addr_m[7:0]
+TOP.dut.oc8051_top.oc8051_ram_top1.wr_data[7:0]
+TOP.dut.oc8051_top.oc8051_ram_top1.wr_data_m[7:0]
+TOP.dut.oc8051_top.oc8051_ram_top1.oc8051_idata.rd_addr[7:0]
+TOP.dut.oc8051_top.oc8051_ram_top1.oc8051_idata.rd_data[7:0]
+@28
+TOP.dut.oc8051_top.oc8051_ram_top1.oc8051_idata.rd_en
+@22
+TOP.dut.oc8051_top.oc8051_ram_top1.oc8051_idata.wr_addr[7:0]
+TOP.dut.oc8051_top.oc8051_ram_top1.oc8051_idata.wr_data[7:0]
+@28
+TOP.dut.oc8051_top.oc8051_ram_top1.oc8051_idata.wr
+TOP.dut.oc8051_top.oc8051_ram_top1.oc8051_idata.wr_en
+@200
+-XRAM
+@28
+TOP.dut.main_ram_sel
+@22
+TOP.dut.main_ram_adr0[13:0]
+TOP.dut.main_ram_adr1[13:0]
+TOP.dut.main_ram_adr2[13:0]
+TOP.dut.main_ram_adr3[13:0]
+TOP.dut.main_ram_bus_adr[15:0]
+TOP.dut.main_ram_bus_dat_r[31:0]
+TOP.dut.main_ram_bus_dat_w[31:0]
+[pattern_trace] 1
+[pattern_trace] 0
