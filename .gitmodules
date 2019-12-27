@@ -1,0 +1,3 @@
+[submodule "fx2/verilog"]
+	path = fx2/verilog
+	url = git@dev.antmicro.com:fpga-ecosystem-turbo8051.git
