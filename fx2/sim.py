@@ -1,4 +1,5 @@
 import sys
+import argparse
 
 from migen import *
 
@@ -22,11 +23,21 @@ _io = [
 ]
 
 
+def parse_args():
+    desc = 'Run FX2 simulation'
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument('binary', nargs='?',
+                        help='Path to binary file with FX2 program')
+    return parser.parse_args()
+
+
 def main():
-    assert len(sys.argv) == 2, 'Usage: %s program.bin' % sys.argv[0]
-    binary = sys.argv[1]
-    with open(binary, 'rb') as f:
-        code = list(f.read())
+    args = parse_args()
+
+    code = None
+    if args.binary:
+        with open(args.binary, 'rb') as f:
+            code = list(f.read())
 
     platform = SimPlatform("sim", _io, toolchain="verilator")
     soc = FX2(platform, clk_freq=48e6, code=code)
