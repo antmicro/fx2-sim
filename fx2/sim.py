@@ -5,11 +5,11 @@ from migen import *
 
 from litex.soc.interconnect import csr, csr_bus, wishbone
 
-from litex.build.generic_platform import Pins, Subsignal
+from litex.build.generic_platform import Pins
 from litex.build.sim.platform import SimPlatform
 from litex.build.sim.config import SimConfig
 
-from soc import FX2, FX2CRG
+from .soc import FX2, FX2CRG
 
 
 class SimPins(Pins):

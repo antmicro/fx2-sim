@@ -4,8 +4,8 @@ from litex.soc.interconnect import csr, csr_bus, wishbone, wishbone2csr
 from litex.soc.interconnect.csr import CSRField, CSRStatus, CSRStorage
 from litex.build.generic_platform import CRG
 
-from core import MCS51
-from memory import MainRAM, ScratchRAM, GPIFWaveformsBuffer, EP0Buffer, \
+from .core import MCS51
+from .memory import MainRAM, ScratchRAM, GPIFWaveformsBuffer, EP0Buffer, \
     EP1OutBuffer, EP1InBuffer, EP2468Buffer, FX2CSRBank
 
 
