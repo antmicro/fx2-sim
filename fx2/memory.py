@@ -176,7 +176,10 @@ class FX2CSRBank(Module):
         ]
 
     def add(self, address, csr):
-        assert csr.name, 'CSR must have name'
+        if not csr.name:
+            raise ValueError('CSR must have a name: %s' % (csr))
+        if address in self._csrs:
+            raise ValueError('CSR at address 0x%04x already exists: ' % (address, self._csrs[address].name))
         self._csrs[address] = csr
         self._csrs_by_name[csr.name] = csr
         return csr
