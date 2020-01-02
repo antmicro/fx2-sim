@@ -72,38 +72,31 @@ class FX2(Module):
         0x0000-0x3fff - main RAM (16KB)
         0xe000-0xe1ff - scratch RAM (512B)
         0xe200-0xffff - CSRs and endpoint buffers (7.5KB)
+
+    Out CPU core has CSR bus for innstructions and wishbone for data.
+    CSR bus is connected directly to Main RAM and is read-only.
+    Wishbone data bus is connected to all slaves. This is safe, as
+    the CPU will set mem_wait=1 while reading/writing data bus.
+    If we add other wishbone masters, than we should be carefull whith
+    them accessing main RAM.
     """
 
     def __init__(self, platform, clk_freq, code):
         self.platform = platform
 
-        self.submodules.cpu = MCS51(platform)
+        self.submodules.cpu = MCS51(self.platform)
         self.submodules.csr_bank = FX2CSRBank()
 
-        self.submodules.crg = FX2CRG(self.csr_bank, clk=platform.request("sys_clk"))
+        self.submodules.crg = FX2CRG(self.csr_bank, clk=self.platform.request("sys_clk"))
 
-        self.submodules.main_ram = MainRAM(16 * 2**10, init=code, read_only=False)
+        self.submodules.main_ram = MainRAM(init=code)
         self.submodules.scratch_ram = ScratchRAM()
 
-        # construct data interface wrapper as cpu model uses wishbone
-        dbus_csr = csr_bus.Interface(data_width=8, address_width=16, alignment=8)
-        self.submodules.dbus = wishbone2csr.WB2CSR(bus_wishbone=self.cpu.dbus, bus_csr=dbus_csr)
+        # connect instruction memory directly using csr bus
+        self.submodules.csr_interconn = csr_bus.Interconnect(self.cpu.ibus, [self.main_ram.ibus])
 
-        # create an arbiter that will choose master depending on wishbone dbus strobe,
-        # as whenever core wants to read/write data, it will stop fetching instructions
-        self.bus_master = csr_bus.Interface.like(self.cpu.ibus)  # ibus is wider
-        dbus_active = self.dbus.wishbone.stb
-        m, i, d = self.bus_master, self.cpu.ibus, self.dbus.csr
-        self.comb += [
-            If(dbus_active, m.adr  .eq(d.adr  )).Else(m.adr  .eq(i.adr  )),
-            If(dbus_active, m.we   .eq(d.we   )).Else(m.we   .eq(i.we   )),
-            If(dbus_active, m.dat_w.eq(d.dat_w)).Else(m.dat_w.eq(i.dat_w)),
-            If(dbus_active, d.dat_r.eq(m.dat_r)).Else(i.dat_r.eq(m.dat_r)),
-        ]
-
-        # interconnect slaves
-        self.submodules.csr_interconn = csr_bus.Interconnect(self.bus_master, [
-            self.main_ram.bus,
-            self.scratch_ram.bus,
-            self.csr_bank.bus,
-        ])
+        # connect all wishbone masters and slaves
+        masters = [self.cpu.dbus]
+        slaves = [self.main_ram, self.scratch_ram, self.csr_bank]
+        _slaves = [(slave.mem_decoder(), slave.bus) for slave in slaves]
+        self.submodules.wb_interconn = wishbone.InterconnectShared(masters, _slaves, register=True)

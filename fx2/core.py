@@ -16,9 +16,6 @@ class MCS51(Module):
         self.ibus = i = csr_bus.Interface(data_width=32, address_width=16, alignment=8)
         self.dbus = d = wishbone.Interface(data_width=8, adr_width=16)
 
-        i.we = Constant(0)
-        #  iack = Signal()
-
         # connect to the verilog 8051 core
         cpu_connections = dict(
             # clock and reset

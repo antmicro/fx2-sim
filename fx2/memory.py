@@ -4,63 +4,40 @@ from litex.soc.interconnect import csr, csr_bus, wishbone, wishbone2csr
 from litex.soc.interconnect.csr import CSR
 
 
-class MainRAM(Module):
+def _data_bus():
+    """Wishbone data bus used in FX2"""
+    return wishbone.Interface(data_width=8, adr_width=16)
+
+
+def _mem_decoder(start_address, size, block_size):
     """
-    Main FX2 RAM that is used for both program and data.
-    It has 32-bit data interface but access does not have to be 32-bit aligned.
-    This module performs address decoding. Main RAM is located starting at address
-    0x0000, so decoding is fairly simple.
+    Create a memory decoder for a region of given size and starting address.
+    Decoding is simplified by assuming that memory is divided into blocks of
+    `block_size`. The blocks occupied by the region are calculated and selection
+    is performed by testing if the address belongs to one of the blocks.
     """
+    n = bits_for(block_size - 1)
 
-    def __init__(self, size, init, read_only=False):
-        self.bus = csr_bus.Interface(data_width=32, address_width=16, alignment=8)
-        mem = Memory(8, size, init=init)
+    def decoder(adr):
+        # find out blocks occupied by given memory area
+        blocks = list(range(start_address >> n, (start_address + size) >> n))
+        # select peripheral if address is in any of the blocks
+        _or = lambda a, b: a | b
+        return reduce(_or, [(adr >> n) == block for block in blocks])
 
-        # select main RAM only for address below size
-        adr_w = log2_int(size, need_pow2=True)
-        sel = Signal()
-        self.comb += sel.eq(self.bus.adr[adr_w:] == 0)
-        # delay sel signal so that it is used during read/write, 1 cycle after address is on line
-        sel_r = Signal()
-        self.sync += sel_r.eq(sel)
-
-        # construct 32-bit data bus from 4 ports
-        p1, p2, p3, p4 = [mem.get_port(write_capable=not read_only) for i in range(4)]
-        self.specials += [mem, p1, p2, p3, p4]
-        port_dat_r = Cat(p1.dat_r, p2.dat_r, p3.dat_r, p4.dat_r)
-        port_dat_w = Cat(p1.dat_w, p2.dat_w, p3.dat_w, p4.dat_w)
-
-        self.comb += [
-            # read 4 consecutive bytes
-            p1.adr.eq(self.bus.adr + 0),
-            p2.adr.eq(self.bus.adr + 1),
-            p3.adr.eq(self.bus.adr + 2),
-            p4.adr.eq(self.bus.adr + 3),
-            # only when selected, else there is 0 on line so it can be ORed with other signals
-            If(sel_r, self.bus.dat_r.eq(port_dat_r)),
-        ]
-
-        if not read_only:
-            self.comb += [
-                p1.we.eq(self.bus.we & sel),
-                p2.we.eq(self.bus.we & sel),
-                p3.we.eq(self.bus.we & sel),
-                p4.we.eq(self.bus.we & sel),
-                port_dat_w.eq(self.bus.dat_w),
-            ]
+    return decoder
 
 
-class RAMAreaInterface(Module):
+class FX2RAMArea(Module):
     """
-    Common interface for FX2 RAM areas. Performs address translation and decoding.
-    Memory area modules should use `ram_bus` to connect memory/csrs, and the area
-    should be connected to csr bus through `cpu_bus`.
+    Base class for FX2 RAM areas.
+    Implements address decoding and methods for wishbone to memory connection.
     """
 
     # maximum block size that we can use to simplify address decoding
-    block_size = 64
-    # TRM 5.6
-    mem_areas = {
+    _ram_decoder_block_size = 64
+    _ram_areas = {  # TRM 5.6
+        'main_ram':       (0x0000, 16 * 2**10),
         'scratch_ram':    (0xe000, 512),
         'gpif_waveforms': (0xe400, 128),
         'ezusb_csrs':     (0xe500, 512),
@@ -70,75 +47,112 @@ class RAMAreaInterface(Module):
         'ep2468':         (0xf000, 4 * 2**10),
     }
 
-    @classmethod
-    def get(cls, name):
-        start, size = cls.mem_areas[name]
-        return RAMAreaInterface(start, size, cls.block_size)
+    @property
+    def _ram_area(self):
+        raise NotImplementedError('Deriving class should set self._ram_area attribute')
 
-    @staticmethod
-    def mem_decoder(start_address, size, block_size):
-        """
-        Create a memory decoder for a region of given size and starting address.
-        Decoding is simplified by assuming that memory is divided into blocks of
-        `block_size`. The blocks occupied by the region are calculated and selection
-        is performed by testing if the address belongs to one of the blocks.
-        """
-        n = bits_for(block_size - 1)
+    @property
+    def base_address(self):
+        return self._ram_areas[self._ram_area][0]
 
-        def decoder(adr):
-            # find out blocks occupied by given memory area
-            blocks = list(range(start_address >> n, (start_address + size) >> n))
-            # select peripheral if address is in any of the blocks
-            _or = lambda a, b: a | b
-            return reduce(_or, [(adr >> n) == block for block in blocks])
+    @property
+    def size(self):
+        return self._ram_areas[self._ram_area][1]
 
-        return decoder
+    def mem_decoder(self):
+        # decoding of main_ram is much simpler
+        if self._ram_area == 'main_ram':
+            # select main RAM only for address below area size (so all other bits are 0)
+            adr_w = log2_int(self.size, need_pow2=True)
+            return lambda adr: adr[adr_w:] == 0
+        else:  # all other areas
+            return _mem_decoder(self.base_address, self.size, self._ram_decoder_block_size)
 
-    def __init__(self, start_address, size, block_size):
-        self.cpu_bus = csr_bus.Interface(data_width=8, address_width=16, alignment=8)
-        self.ram_bus = csr_bus.Interface.like(self.cpu_bus)
-
-        # memory region selection
-        sel = Signal()
-        decoder = self.mem_decoder(start_address, size, block_size)
-        self.comb += sel.eq(decoder(self.cpu_bus.adr))
-        # delay sel signal so that it is used during read/write, 1 cycle after address is on line
-        sel_r = Signal()
-        self.sync += sel_r.eq(sel)
-
+    def connect_wb_port(self, port, bus):
         self.comb += [
-            self.ram_bus.we.eq(self.cpu_bus.we & sel),
-            self.ram_bus.adr.eq(self.cpu_bus.adr - start_address),  # translate the address by area's offset
-            If(sel_r, self.cpu_bus.dat_r.eq(self.ram_bus.dat_r)),
-            self.ram_bus.dat_w.eq(self.cpu_bus.dat_w),
+            # wishbone.InterconnectShared enables bus.cyc depending on bus.sel,
+            # so we don't need to decode it, just use bus.cyc as selector
+            port.we.eq(bus.cyc & bus.stb & bus.we),
+            port.adr.eq(bus.adr[:len(port.adr)]),
+            bus.dat_r.eq(port.dat_r),
+            port.dat_w.eq(bus.dat_w),
+        ]
+
+    def add_wb_ack(self, bus):
+        self.sync += [
+            bus.ack.eq(0),
+            If(bus.cyc & bus.stb & ~bus.ack, bus.ack.eq(1)),
         ]
 
 
-class ScratchRAM(Module):
+class MainRAM(FX2RAMArea):
+    """
+    Main FX2 RAM that is used for both program and data.
+    It has 32-bit data interface but access does not have to be 32-bit aligned.
+    This module performs address decoding. Main RAM is located starting at address
+    0x0000, so decoding is fairly simple.
+    """
+
+    _ram_area = 'main_ram'
+
+    def __init__(self, init):
+        self.mem = Memory(8, self.size, init=init)
+
+        self.ibus = csr_bus.Interface(data_width=32, address_width=16, alignment=8)
+        self.dbus = self.bus = _data_bus()
+
+        self.add_ibus_port()
+        self.add_dbus_port()
+
+    def add_ibus_port(self):
+        # construct 32-bit data bus from 4 ports
+        p1, p2, p3, p4 = [self.mem.get_port(write_capable=False) for i in range(4)]
+        self.specials += [self.mem, p1, p2, p3, p4]
+        port_dat_r = Cat(p1.dat_r, p2.dat_r, p3.dat_r, p4.dat_r)
+
+        self.comb += [
+            # read 4 consecutive bytes
+            p1.adr.eq(self.ibus.adr + 0),
+            p2.adr.eq(self.ibus.adr + 1),
+            p3.adr.eq(self.ibus.adr + 2),
+            p4.adr.eq(self.ibus.adr + 3),
+            self.ibus.dat_r.eq(port_dat_r),
+        ]
+
+    def add_dbus_port(self):
+        port = self.mem.get_port(write_capable=True)
+        self.specials += port
+        self.connect_wb_port(port, self.dbus)
+        self.add_wb_ack(self.dbus)
+
+
+class ScratchRAM(FX2RAMArea):
     """512 bytes of data-only RAM"""
 
+    _ram_area = 'scratch_ram'
+
     def __init__(self):
-        self.submodules.interface = RAMAreaInterface.get('scratch_ram')
-        self.bus = self.interface.cpu_bus
+        self.bus = _data_bus()
 
         # create memory with regular 8-bit port
         mem = Memory(8, 512)
         port = mem.get_port(write_capable=True)
         self.specials += [mem, port]
 
-        self.comb += self.interface.ram_bus.connect(port)
+        self.connect_wb_port(port, self.bus)
+        self.add_wb_ack(self.bus)
 
 
-class FX2CSRBank(Module):
+class FX2CSRBank(FX2RAMArea):
     """
     Bank of CSRs in memory.
-    This is a central object for registering and retreiving CSRs (add/get methods).
+    This should be the central object for registering and retreiving CSRs (add/get methods).
     """
 
+    _ram_area = 'ezusb_csrs'
+
     def __init__(self):
-        self.submodules.interface = RAMAreaInterface.get('ezusb_csrs')
-        self._base_adr = RAMAreaInterface.mem_areas['ezusb_csrs'][0]
-        self.bus = self.interface.cpu_bus
+        self.bus = _data_bus()
         self._csrs = {}
         self._csrs_by_name = {}
 
@@ -158,22 +172,22 @@ class FX2CSRBank(Module):
                 self.submodules += csr
 
         # connect all simple csrs to bus with address decoding logic
-        bus = self.interface.ram_bus
         read_cases = {}
         for adr, csr in self.simple_csrs.items():
-            local_adr = adr - self._base_adr
             self.comb += [
-                csr.r.eq(bus.dat_w[:csr.size]),
-                csr.re.eq(bus.we & (bus.adr == local_adr)),
-                csr.we.eq(~bus.we & (bus.adr == local_adr)),
+                csr.r.eq(self.bus.dat_w[:csr.size]),
+                csr.re.eq(self.bus.we & (self.bus.adr == adr)),
+                csr.we.eq(~self.bus.we & (self.bus.adr == adr)),
             ]
-            read_cases[local_adr] = bus.dat_r.eq(csr.w)
+            read_cases[adr] = self.bus.dat_r.eq(csr.w)
 
         # add data reads
         self.sync += [
-            bus.dat_r.eq(0),
-            Case(bus.adr, read_cases),
+            self.bus.dat_r.eq(0),
+            Case(self.bus.adr, read_cases),
         ]
+
+        self.add_wb_ack(self.bus)
 
     def add(self, address, csr):
         if not csr.name:
