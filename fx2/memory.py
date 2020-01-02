@@ -68,12 +68,17 @@ class FX2RAMArea(Module):
         else:  # all other areas
             return _mem_decoder(self.base_address, self.size, self._ram_decoder_block_size)
 
+    def local_adr(self, adr):
+        # perform address translation so that memory has zero-based address
+        local_adr = adr - self.base_address
+        return local_adr
+
     def connect_wb_port(self, port, bus):
         self.comb += [
             # wishbone.InterconnectShared enables bus.cyc depending on bus.sel,
             # so we don't need to decode it, just use bus.cyc as selector
             port.we.eq(bus.cyc & bus.stb & bus.we),
-            port.adr.eq(bus.adr[:len(port.adr)]),
+            port.adr.eq(self.local_adr(bus.adr)[:len(port.adr)]),
             bus.dat_r.eq(port.dat_r),
             port.dat_w.eq(bus.dat_w),
         ]
