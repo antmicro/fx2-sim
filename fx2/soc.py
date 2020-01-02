@@ -5,7 +5,8 @@ from litex.soc.interconnect.csr import CSRField, CSRStatus, CSRStorage
 from litex.build.generic_platform import CRG
 
 from core import MCS51
-from memory import MainRAM, ScratchRAM, FX2CSRBank
+from memory import MainRAM, ScratchRAM, GPIFWaveformsBuffer, EP0Buffer, \
+    EP1OutBuffer, EP1InBuffer, EP2468Buffer, FX2CSRBank
 
 
 class FX2CRG(Module):
@@ -76,27 +77,40 @@ class FX2(Module):
     Out CPU core has CSR bus for innstructions and wishbone for data.
     CSR bus is connected directly to Main RAM and is read-only.
     Wishbone data bus is connected to all slaves. This is safe, as
-    the CPU will set mem_wait=1 while reading/writing data bus.
-    If we add other wishbone masters, than we should be carefull whith
-    them accessing main RAM.
+    the CPU will set mem_wait=1 when any master uses the data bus.
     """
 
     def __init__(self, platform, clk_freq, code):
         self.platform = platform
 
         self.submodules.cpu = MCS51(self.platform)
-        self.submodules.csr_bank = FX2CSRBank()
 
-        self.submodules.crg = FX2CRG(self.csr_bank, clk=self.platform.request("sys_clk"))
-
+        # memories
         self.submodules.main_ram = MainRAM(init=code)
         self.submodules.scratch_ram = ScratchRAM()
+        self.submodules.gpif_waveforms = GPIFWaveformsBuffer()
+        self.submodules.csr_bank = FX2CSRBank()
+        self.submodules.ep0 = EP0Buffer()
+        self.submodules.ep1_out = EP1OutBuffer()
+        self.submodules.ep1_in = EP1InBuffer()
+        self.submodules.ep2468 = EP2468Buffer()
+
+        self.submodules.crg = FX2CRG(self.csr_bank, clk=self.platform.request("sys_clk"))
 
         # connect instruction memory directly using csr bus
         self.submodules.csr_interconn = csr_bus.Interconnect(self.cpu.ibus, [self.main_ram.ibus])
 
         # connect all wishbone masters and slaves
         masters = [self.cpu.dbus]
-        slaves = [self.main_ram, self.scratch_ram, self.csr_bank]
+        slaves = [
+            self.main_ram,
+            self.scratch_ram,
+            self.gpif_waveforms,
+            self.csr_bank,
+            self.ep0,
+            self.ep1_out,
+            self.ep1_in,
+            self.ep2468,
+        ]
         _slaves = [(slave.mem_decoder(), slave.bus) for slave in slaves]
         self.submodules.wb_interconn = wishbone.InterconnectShared(masters, _slaves, register=True)

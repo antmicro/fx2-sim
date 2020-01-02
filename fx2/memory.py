@@ -90,6 +90,36 @@ class FX2RAMArea(Module):
         ]
 
 
+class RAMBuffer(FX2RAMArea):
+    """
+    Simple RAM buffer used for basic data storage.
+    """
+
+    @property
+    def _ram_area(self):
+        return self._area
+
+    def __init__(self, ram_area):
+        self._area = ram_area
+        self.bus = _data_bus()
+
+        # create memory with regular 8-bit port
+        mem = Memory(8, self.size)
+        port = mem.get_port(write_capable=True)
+        self.specials += [mem, port]
+
+        self.connect_wb_port(port, self.bus)
+        self.add_wb_ack(self.bus)
+
+
+ScratchRAM          = lambda: RAMBuffer('scratch_ram')
+GPIFWaveformsBuffer = lambda: RAMBuffer('gpif_waveforms')
+EP0Buffer           = lambda: RAMBuffer('ep0inout')
+EP1OutBuffer        = lambda: RAMBuffer('ep1out')
+EP1InBuffer         = lambda: RAMBuffer('ep1in')
+EP2468Buffer        = lambda: RAMBuffer('ep2468')
+
+
 class MainRAM(FX2RAMArea):
     """
     Main FX2 RAM that is used for both program and data.
@@ -129,23 +159,6 @@ class MainRAM(FX2RAMArea):
         self.specials += port
         self.connect_wb_port(port, self.dbus)
         self.add_wb_ack(self.dbus)
-
-
-class ScratchRAM(FX2RAMArea):
-    """512 bytes of data-only RAM"""
-
-    _ram_area = 'scratch_ram'
-
-    def __init__(self):
-        self.bus = _data_bus()
-
-        # create memory with regular 8-bit port
-        mem = Memory(8, 512)
-        port = mem.get_port(write_capable=True)
-        self.specials += [mem, port]
-
-        self.connect_wb_port(port, self.bus)
-        self.add_wb_ack(self.bus)
 
 
 class FX2CSRBank(FX2RAMArea):
