@@ -10,8 +10,9 @@ from memory import MainRAM, ScratchRAM, GPIFWaveformsBuffer, EP0Buffer, \
 
 
 class FX2CRG(Module):
-    """ Clock and Reset Generator """
-
+    """
+    Clock and reset generator with clock divider depending on FX2 registers.
+    """
     def __init__(self, csr_bank, clk, rst=0):
         self.clock_domains.cd_sys = ClockDomain()
         self.clock_domains.cd_por = ClockDomain(reset_less=True)
@@ -46,7 +47,7 @@ class FX2CRG(Module):
         ]
 
         self.comb += [
-            self.cd_sys.rst.eq(int_rst),
+            self.cd_sys.rst.eq(int_rst | rst),
             self.cd_por.clk.eq(clk),
         ]
 
@@ -79,8 +80,7 @@ class FX2(Module):
     Wishbone data bus is connected to all slaves. This is safe, as
     the CPU will set mem_wait=1 when any master uses the data bus.
     """
-
-    def __init__(self, platform, clk_freq, code):
+    def __init__(self, platform, clk_freq, code, wb_masters=None, wb_slaves=None):
         self.platform = platform
 
         self.submodules.cpu = MCS51(self.platform)
@@ -95,13 +95,11 @@ class FX2(Module):
         self.submodules.ep1_in = EP1InBuffer()
         self.submodules.ep2468 = EP2468Buffer()
 
-        self.submodules.crg = FX2CRG(self.csr_bank, clk=self.platform.request("sys_clk"))
-
         # connect instruction memory directly using csr bus
         self.submodules.csr_interconn = csr_bus.Interconnect(self.cpu.ibus, [self.main_ram.ibus])
 
         # connect all wishbone masters and slaves
-        masters = [self.cpu.dbus]
+        masters = [self.cpu.dbus] + (wb_masters or [])
         slaves = [
             self.main_ram,
             self.scratch_ram,
@@ -111,6 +109,6 @@ class FX2(Module):
             self.ep1_out,
             self.ep1_in,
             self.ep2468,
-        ]
+        ] + (wb_slaves or [])
         _slaves = [(slave.mem_decoder(), slave.bus) for slave in slaves]
         self.submodules.wb_interconn = wishbone.InterconnectShared(masters, _slaves, register=True)
