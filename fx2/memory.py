@@ -99,12 +99,12 @@ class RAMBuffer(FX2RAMArea):
     def _ram_area(self):
         return self._area
 
-    def __init__(self, ram_area):
+    def __init__(self, ram_area, init=None):
         self._area = ram_area
         self.bus = _data_bus()
 
         # create memory with regular 8-bit port
-        mem = Memory(8, self.size)
+        mem = Memory(8, self.size, init=init or [0x00] * self.size)
         port = mem.get_port(write_capable=True)
         self.specials += [mem, port]
 
@@ -131,6 +131,7 @@ class MainRAM(FX2RAMArea):
     _ram_area = 'main_ram'
 
     def __init__(self, init):
+        init = init + [0x00] * (self.size - len(init))
         self.mem = Memory(8, self.size, init=init)
 
         self.ibus = csr_bus.Interface(data_width=32, address_width=16, alignment=8)
