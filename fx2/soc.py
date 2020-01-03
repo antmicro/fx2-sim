@@ -109,6 +109,6 @@ class FX2(Module):
             self.ep1_out,
             self.ep1_in,
             self.ep2468,
-        ] + (wb_slaves or [])
-        _slaves = [(slave.mem_decoder(), slave.bus) for slave in slaves]
-        self.submodules.wb_interconn = wishbone.InterconnectShared(masters, _slaves, register=True)
+        ]
+        slaves = [(slave.mem_decoder(), slave.bus) for slave in slaves] + (wb_slaves or [])
+        self.submodules.wb_interconn = wishbone.InterconnectShared(masters, slaves, register=True)
