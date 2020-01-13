@@ -51,8 +51,34 @@ class FX2CRG(Module):
             self.cd_por.clk.eq(clk),
         ]
 
-    def get_csrs(self):
-        return {0xe600: self.cpucs}
+
+class FX2USB(Module):
+    def __init__(self, csr_bank, platform):
+        self.csr_bank = csr_bank
+
+        usbirq = self.csr_bank.add(0xe65d, CSRStorage(name='usbirq',fields=[
+            CSRField(name='sudav',   size=1, offset=0),
+            CSRField(name='sof',     size=1, offset=1),
+            CSRField(name='sutok',   size=1, offset=2),
+            CSRField(name='susp',    size=1, offset=3),
+            CSRField(name='ures',    size=1, offset=4),
+            CSRField(name='hsgrant', size=1, offset=5),
+            CSRField(name='ep0ack',  size=1, offset=6),
+        ]))
+
+        # TODO: implement possibility to add multibyte CSRS?
+        setupdat = [self.csr_bank.add(0xe6b8 + i, CSRStorage(name='setupdat%d' % i, size=8)) for i in range(8)]
+
+        # SOF frame number
+        self.csr_bank.add(0xe684, CSRStorage(name='usbframeh', size=8))
+        self.csr_bank.add(0xe685, CSRStorage(name='usbframel', size=8))
+
+        self.csr_bank.add(0xe6a0, CSRStorage(name='ep0cs', fields=[
+            CSRField(name='stall', offset=0),
+            CSRField(name='busy',  offset=1), # TODO: read-only
+            CSRField(name='hsnak', offset=7),
+        ]))
+
 
 
 class FX2(Module):
@@ -112,3 +138,5 @@ class FX2(Module):
         ]
         slaves = [(slave.mem_decoder(), slave.bus) for slave in slaves] + (wb_slaves or [])
         self.submodules.wb_interconn = wishbone.InterconnectShared(masters, slaves, register=True)
+
+        self.submodules.usb = FX2USB(self.csr_bank, self.platform)
