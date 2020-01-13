@@ -1,3 +1,6 @@
 [submodule "fx2/verilog"]
 	path = fx2/verilog
 	url = git@dev.antmicro.com:fpga-ecosystem-turbo8051.git
+[submodule "test-libfx2/libfx2"]
+	path = test-libfx2/libfx2
+	url = https://github.com/whitequark/libfx2.git
