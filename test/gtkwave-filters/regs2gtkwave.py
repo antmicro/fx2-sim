@@ -46,8 +46,17 @@ if __name__ == "__main__":
             adr_val = int(h, 16) + int(d)
         else:
             adr_val = int(adr, 16)
-        line = fmt.format(val=adr_val, name=m.group('name').replace(' ', '_'))
-        lines.append(line)
+        name = m.group('name').replace(' ', '_')
+
+        # expand arrays
+        arr_m = re.match('([^]]*)\[(\d+)\]$', name)
+        if arr_m:
+            for i in range(int(arr_m.group(2))):
+                line = fmt.format(val=adr_val + i, name='%s[%d]' % (arr_m.group(1), i))
+                lines.append(line)
+        else:  # one entry
+            line = fmt.format(val=adr_val, name=m.group('name').replace(' ', '_'))
+            lines.append(line)
 
     contents = '\n'.join(lines)
     print(contents)
