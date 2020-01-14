@@ -178,6 +178,10 @@ class FX2CSRBank(FX2RAMArea):
     def do_finalize(self):
         # bus assignments delayed to do_finalize so that all the csrs have already been added
 
+        # override csr storage names (defaults to something like csrstorageN_storageM)
+        for csr in self._csrs.values():
+            csr.storage.name_override = self.csr_storage_name(csr)
+
         # finalize compound csrs to get simple csrs, we only support simple csrs
         self.simple_csrs = {}
         for adr, csr in self._csrs.items():
@@ -207,6 +211,9 @@ class FX2CSRBank(FX2RAMArea):
         ]
 
         self.add_wb_ack(self.bus)
+
+    def csr_storage_name(self, csr):
+        return 'fx2csr_' + csr.name
 
     def add(self, address, csr):
         if not csr.name:
