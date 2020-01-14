@@ -67,10 +67,13 @@ int main()
     }
 
     // dummy write so that we can easily find it in simulation
-    IFCONFIG = 0; // 0xe601
+    // (scratch is at 0xe000)
+    scratch[1] = scratch[0]; // 0xe001
 
     // handle setup data available
     isr_SUDAV();
+
+    scratch[2] = scratch[0]; // 0xe002
 
   }
 }
