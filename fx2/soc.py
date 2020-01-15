@@ -111,6 +111,9 @@ class FX2USB(Module):
             CSRField(name='hsnak', offset=7, clear_on_write=True),
         ]))
 
+        self.csr_bank.add(0xe68a, CSRStorage(name='ep0bch', size=8))
+        self.csr_bank.add(0xe68b, CSRStorage(name='ep0bcl', size=8))
+
 
 
 class FX2(Module):
