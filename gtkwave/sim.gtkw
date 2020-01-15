@@ -1,13 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Fri Dec 27 15:34:55 2019
+[*] Fri Jan 10 14:20:37 2020
 [*]
-[dumpfile] "build/dut.vcd"
-[savefile] "sim.gtkw"
+[dumpfile] "../build/dut.vcd"
+[dumpfile_mtime] "Thu Jan  9 13:52:32 2020"
+[dumpfile_size] 43013628
+[savefile] "gtkwave/sim.gtkw"
 [timestart] 0
-[size] 2560 1389
+[size] 2560 1416
 [pos] -1 -1
-*-6.000000 21500 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-6.000000 21868 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.dut.
 [treeopen] TOP.dut.oc8051_top.
@@ -16,7 +18,7 @@
 [sst_width] 312
 [signals_width] 251
 [sst_expanded] 1
-[sst_vpaned_height] 455
+[sst_vpaned_height] 465
 @200
 -alu src sel
 @28
@@ -46,7 +48,7 @@ TOP.dut.oc8051_top.oc8051_decoder1.wait_data
 TOP.dut.oc8051_top.oc8051_decoder1.op_cur[7:0]
 @2022
 [color] 7
-^1 test/gtkwave-filters/op_code.txt
+^1 gtkwave/op_code.txt
 TOP.dut.oc8051_top.oc8051_decoder1.op[7:0]
 @22
 [color] 7

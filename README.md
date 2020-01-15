@@ -12,13 +12,13 @@ Some dependencies may not be installed automatically, `setup.sh` will list those
 
 ## Running
 
+First build example binaries by invoking `make -C firmware`.
+
 To run the simulation specify binary file to be loaded, e.g.
 
 ```
-python fx2/sim.py test/simple.bin
+python -m fx2.sim firmware/8051/clkspd.bin
 ```
 
-To build all the example binaries, run `make -C test/`.
-
 Results can be viewed using GTKWave `gtkwave build/dut.vcd`,
-or starting from already prepared GTKWave save `gtkwave sim.gtkw`.
+or starting from an already prepared GTKWave save `gtkwave gtkwave/sim.gtkw`.
