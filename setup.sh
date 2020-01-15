@@ -16,6 +16,8 @@ if ! command -v sdcc >/dev/null 2>&1; then
     exit 1
 fi
 
+# download submodulse
+git submodule update --init --recursive
 
 # install other required packages outside the repo
 install_dir="$INSTALL_DIR"
@@ -48,12 +50,12 @@ popd > /dev/null || exit 1
 
 
 cat <<EOF
+
+########################################################
 Make sure to install requred system packages, on Ubuntu:
     sudo apt install libevent-dev libjson-c-dev
+########################################################
+See README.md for more information.
+########################################################
 
-Now you can run the simulation:
-    cd THIS_REPO/fx2/
-    make -C test
-    python fx2/sim.py test/simple.bin
-    gtkwave build/dut.vcd
 EOF
