@@ -12,10 +12,10 @@ include $(LIBFX2)/fx2rules.mk
 # force proper dependecy to automatically build libfx2
 $(LIBFX2)/lib/$(MODEL)/fx2.lib: $(LIBFX2)/.stamp
 
-%.bin: %.ihex
+$(TARGET).bin: $(TARGET).ihex
 	hex2bin.py $< $@
 
-all: main.bin
+all: $(TARGET).bin
 
 clean: clean-libfx2 clean-bin
 
@@ -24,3 +24,5 @@ clean-libfx2:
 
 clean-bin:
 	rm -f main.bin
+
+.PHONY: all clean clean-libfx2 clean-bin
