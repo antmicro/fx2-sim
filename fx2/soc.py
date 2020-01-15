@@ -66,9 +66,7 @@ class FX2USB(Module):
             CSRField8(name='ep0ack',  size=1, offset=6, clear_on_write=True),
         ]))
 
-        # TODO: implement possibility to add multibyte CSRS?
-        #  setupdat = [self.csr_bank.add(0xe6b8 + i, CSRStorage8(name='setupdat%d' % i, size=8)) for i in range(8)]
-        setupdat = self.csr_bank.add(0xe6b8, CSRStorage(name='setupdat', size=8 * 8))
+        self.csr_bank.add(0xe6b8, CSRStorage(name='setupdat', size=8 * 8))
 
         # SOF frame number
         self.csr_bank.add(0xe684, CSRStorage8(name='usbframeh', size=8))
