@@ -1,7 +1,7 @@
 from migen import *
 
 from litex.soc.interconnect import csr, csr_bus, wishbone, wishbone2csr
-from litex.soc.interconnect.csr import CSR
+from litex.soc.interconnect.csr import CSR, CSRField, CSRStorage, CSRAccess
 
 
 def _data_bus():
@@ -162,6 +162,75 @@ class MainRAM(FX2RAMArea):
         self.add_wb_ack(self.dbus)
 
 
+class CSRField8(CSRField):
+    """
+    CSRField modifications that adds clear_on_write argument and fixes error in original
+    CSRField, which assumes that IntEnum has .values() method.
+    """
+    def __init__(self, name, size=1, offset=None, reset=0, description=None, pulse=False,
+                 access=None, values=None, clear_on_write=False):
+        assert access is None or (access in CSRAccess)
+        self.name           = name
+        self.size           = size
+        self.offset         = offset
+        self.reset_value    = reset
+        self.description    = description
+        self.access         = access
+        self.pulse          = pulse
+        self.values         = values
+        self.clear_on_write = clear_on_write
+        Signal.__init__(self, size, name=name, reset=reset)
+
+
+class CSRStorage8(CSRStorage):
+    """
+    CSRStorage modification that only supports 8-bit registers, but implements
+    clear-on-write and read-only features, either passed as CSRField8 arguments
+    or directly to CSRStorage8 constructor.
+    """
+    def __init__(self, *args, clear_on_write=None, field_access=None, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # bit-related attributes important during generation
+        self.clear_on_write = clear_on_write or []
+        self.field_access = field_access or {} # {bit: CSRAccess}
+
+        # copy attributes from csr fields
+        if hasattr(self, 'fields'):
+            for f in self.fields.fields:
+                bits = range(f.offset, f.offset + f.size)
+                if f.clear_on_write:
+                    self.clear_on_write.extend(list(bits))
+                for bit in bits:
+                    assert bit not in self.field_access, 'Bit %d access set more than once' % bit
+                    self.field_access[bit] = f.access
+
+        assert len(set(self.clear_on_write)) == len(self.clear_on_write), \
+            'Found duplicates: %s' % self.clear_on_write
+
+    def do_finalize(self, busword):
+        nwords = (self.size + busword - 1)//busword
+        # construct storage
+        assert busword == 8 and nwords == 1, 'Only 1-byte CSRStorage is supposed'
+        sc = CSR(self.size, self.name)
+        self.simple_csrs.append(sc)
+        #
+        for bit in range(self.size):
+            access = self.field_access.get(bit, CSRAccess.ReadWrite)
+            if access == CSRAccess.WriteOnly:
+                raise NotADirectoryError()
+            # write only if the register is not read-only
+            if access != CSRAccess.ReadOnly:
+                if bit in self.clear_on_write:
+                    # write 0 only if there is write and it is writing 1
+                    self.sync += If(sc.re & sc.r[bit], self.storage[bit].eq(0))
+                else:
+                    self.sync += If(sc.re, self.storage[bit].eq(sc.r[bit]))
+        self.sync += self.re.eq(sc.re)
+        # read
+        self.comb += sc.w.eq(self.storage)
+
+
 class FX2CSRBank(FX2RAMArea):
     """
     Bank of CSRs in memory.
@@ -190,25 +259,20 @@ class FX2CSRBank(FX2RAMArea):
             else:
                 csr.finalize(8)
                 simple = csr.get_simple_csrs()
-                assert len(simple) == 1, 'Found compound CSR - not implemented'
-                self.simple_csrs[adr] = simple[0]
+                if len(simple) == 1:
+                    self.simple_csrs[adr] = simple[0]
+                else:
+                    assert not isinstance(csr, CSRStorage8), 'CSRStorage8 does not support multi-word CSRs'
+                    for s, a in zip(simple, range(adr, adr + len(simple))):
+                        self.simple_csrs[a] = s
                 self.submodules += csr
 
         # connect all simple csrs to bus with address decoding logic
         read_cases = {}
         for adr, csr in self.simple_csrs.items():
-            # as long as we support only 1-byte csrs, this is ok
-            compund_csr = self._csrs[adr]
             for bit in range(csr.size):
                 wr_val = self.bus.dat_w[bit]
-                if bit in getattr(compund_csr, 'clear_on_write', []): # defaults to empty
-                    # wr_val=0, csr[bit]=0  =>  0
-                    # wr_val=1, csr[bit]=0  =>  0
-                    # wr_val=0, csr[bit]=1  =>  1
-                    # wr_val=1, csr[bit]=1  =>  0
-                    self.comb += csr.r[bit].eq(~wr_val & compund_csr.storage[bit])
-                else:
-                    self.comb += csr.r[bit].eq(wr_val)
+                self.comb += csr.r[bit].eq(wr_val)
             self.comb += [
                 csr.re.eq(self.bus.we & (self.bus.adr == adr)),
                 csr.we.eq(~self.bus.we & (self.bus.adr == adr)),
