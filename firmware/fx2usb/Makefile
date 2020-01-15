@@ -14,3 +14,13 @@ $(LIBFX2)/lib/$(MODEL)/fx2.lib: $(LIBFX2)/.stamp
 
 %.bin: %.ihex
 	hex2bin.py $< $@
+
+all: main.bin
+
+clean: clean-libfx2 clean-bin
+
+clean-libfx2:
+	$(MAKE) -C $(LIBFX2) clean
+
+clean-bin:
+	rm -f main.bin
