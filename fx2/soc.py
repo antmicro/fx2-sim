@@ -1,12 +1,44 @@
 from migen import *
 
 from litex.soc.interconnect import csr, csr_bus, wishbone, wishbone2csr
-from litex.soc.interconnect.csr import CSRField, CSRStatus, CSRStorage
+from litex.soc.interconnect.csr import CSRStatus, CSRAccess
+import litex.soc.interconnect.csr
 from litex.build.generic_platform import CRG
 
 from .core import MCS51
 from .memory import MainRAM, ScratchRAM, GPIFWaveformsBuffer, EP0Buffer, \
     EP1OutBuffer, EP1InBuffer, EP2468Buffer, FX2CSRBank
+
+
+# fix error in CSRField as it assumes IntEnum has .values() method, which it does not
+# adds clear-on-write attribute
+class CSRField(litex.soc.interconnect.csr.CSRField):
+    def __init__(self, name, size=1, offset=None, reset=0, description=None, pulse=False,
+                 access=None, values=None, clear_on_write=False):
+        assert access is None or (access in CSRAccess)
+        self.name           = name
+        self.size           = size
+        self.offset         = offset
+        self.reset_value    = reset
+        self.description    = description
+        self.access         = access
+        self.pulse          = pulse
+        self.values         = values
+        self.clear_on_write = clear_on_write
+        Signal.__init__(self, size, name=name, reset=reset)
+
+class CSRStorage(litex.soc.interconnect.csr.CSRStorage):
+    def __init__(self, *args, clear_on_write=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.clear_on_write = clear_on_write or []
+        # copy clear_on_write from csr fields
+        if hasattr(self, 'fields'):
+            for f in self.fields.fields:
+                if f.clear_on_write:
+                    bits = range(f.offset, f.offset + f.size)
+                    self.clear_on_write.extend(list(bits))
+        assert len(set(self.clear_on_write)) == len(self.clear_on_write), \
+            'Found duplicates: %s' % self.clear_on_write
 
 
 class FX2CRG(Module):
@@ -57,13 +89,13 @@ class FX2USB(Module):
         self.csr_bank = csr_bank
 
         usbirq = self.csr_bank.add(0xe65d, CSRStorage(name='usbirq',fields=[
-            CSRField(name='sudav',   size=1, offset=0),
-            CSRField(name='sof',     size=1, offset=1),
-            CSRField(name='sutok',   size=1, offset=2),
-            CSRField(name='susp',    size=1, offset=3),
-            CSRField(name='ures',    size=1, offset=4),
-            CSRField(name='hsgrant', size=1, offset=5),
-            CSRField(name='ep0ack',  size=1, offset=6),
+            CSRField(name='sudav',   size=1, offset=0, clear_on_write=True),
+            CSRField(name='sof',     size=1, offset=1, clear_on_write=True),
+            CSRField(name='sutok',   size=1, offset=2, clear_on_write=True),
+            CSRField(name='susp',    size=1, offset=3, clear_on_write=True),
+            CSRField(name='ures',    size=1, offset=4, clear_on_write=True),
+            CSRField(name='hsgrant', size=1, offset=5, clear_on_write=True),
+            CSRField(name='ep0ack',  size=1, offset=6, clear_on_write=True),
         ]))
 
         # TODO: implement possibility to add multibyte CSRS?
@@ -75,8 +107,8 @@ class FX2USB(Module):
 
         self.csr_bank.add(0xe6a0, CSRStorage(name='ep0cs', fields=[
             CSRField(name='stall', offset=0),
-            CSRField(name='busy',  offset=1), # TODO: read-only
-            CSRField(name='hsnak', offset=7),
+            CSRField(name='busy',  offset=1, access=CSRAccess.ReadOnly),  # set by hardware
+            CSRField(name='hsnak', offset=7, clear_on_write=True),
         ]))
 
 

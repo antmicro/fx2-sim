@@ -197,8 +197,19 @@ class FX2CSRBank(FX2RAMArea):
         # connect all simple csrs to bus with address decoding logic
         read_cases = {}
         for adr, csr in self.simple_csrs.items():
+            # as long as we support only 1-byte csrs, this is ok
+            compund_csr = self._csrs[adr]
+            for bit in range(csr.size):
+                wr_val = self.bus.dat_w[bit]
+                if bit in getattr(compund_csr, 'clear_on_write', []): # defaults to empty
+                    # wr_val=0, csr[bit]=0  =>  0
+                    # wr_val=1, csr[bit]=0  =>  0
+                    # wr_val=0, csr[bit]=1  =>  1
+                    # wr_val=1, csr[bit]=1  =>  0
+                    self.comb += csr.r[bit].eq(~wr_val & compund_csr.storage[bit])
+                else:
+                    self.comb += csr.r[bit].eq(wr_val)
             self.comb += [
-                csr.r.eq(self.bus.dat_w[:csr.size]),
                 csr.re.eq(self.bus.we & (self.bus.adr == adr)),
                 csr.we.eq(~self.bus.we & (self.bus.adr == adr)),
             ]
