@@ -81,6 +81,50 @@ class FX2USB(Module):
         self.csr_bank.add(0xe68a, CSRStorage8(name='ep0bch', size=8))
         self.csr_bank.add(0xe68b, CSRStorage8(name='ep0bcl', size=8))
 
+        togctl = self.csr_bank.add(0xe683, CSRStorage8(name='togctl', fields=[
+            CSRField8(name='ep', offset=0, size=4),
+            CSRField8(name='io', offset=4),
+            CSRField8(name='r',  offset=5, pulse=True),
+            CSRField8(name='s',  offset=6, pulse=True),
+            CSRField8(name='q',  offset=7, access=CSRAccess.ReadOnly),
+        ]))
+        # USB requires data toggle synchronisation (DATA0/DATA1, see USB 2.0 Specification 8.6)
+        # each endpoint has one toggle bit, except for EP1, we store them as:
+        # [ EP0, _, EP1OUT, EP1IN, EP2, _, EP4, _, EP6, _, EP8, _ ]
+        # [ EP0, EP1OUT, EP1IN, EP2, EP4, EP6, EP8 ]
+        #  ep2toggle_index = lambda ep, io: 2 * ep + (io if ep == 1 else 0)
+        ep_numbers = [0, 1, 2, 4, 6, 8]
+        def ep2toggle_index(ep, io):
+            assert ep in ep_numbers and io in [0, 1], 'ep: %s, io: %s' % (ep, io)
+            if ep == 0:
+                return 0
+            elif ep == 1:
+                return 1 + io
+            else:
+                return ep // 2 + 2  # 3-6
+        n_toggles = ep2toggle_index(ep_numbers[-1], 1) + 1
+        togctl_toggles = Signal(n_toggles, name_override='togctl_toggles')
+
+        def generate_ep_io_cases(assignment):
+            ep_cases = {}
+            for ep in ep_numbers:
+                toggle = lambda ep, io: togctl_toggles[ep2toggle_index(ep, io)]
+                io_cases = {io: assignment(toggle(ep, io)) for io in [0, 1]}
+                ep_cases[ep] = Case(togctl.fields.io, io_cases)
+            return Case(togctl.fields.ep, ep_cases)
+
+        # assign to Q based on EP and IO
+        q = togctl.storage[togctl.fields.q.offset]
+        self.comb += generate_ep_io_cases(lambda toggle: q.eq(toggle))
+
+        # set/reset toggles based on EP and IO, S sets DATA1 (bit = 1), R sets DATA0
+        DATA1, DATA0 = 1, 0
+        self.sync += [
+            If(togctl.fields.s, generate_ep_io_cases(lambda toggle: toggle.eq(DATA1)))
+            .Elif(togctl.fields.r, generate_ep_io_cases(lambda toggle: toggle.eq(DATA0)))
+        ]
+
+
 
 class FX2(Module):
     """
