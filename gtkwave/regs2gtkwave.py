@@ -29,6 +29,9 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
 
+    # omit addresses that are bigger than width
+    adr_max = (1 << (4 * int(args.width))) - 1
+
     matches = []
     with open(args.fx2regs) as f:
         for line in f:
@@ -47,6 +50,9 @@ if __name__ == "__main__":
         else:
             adr_val = int(adr, 16)
         name = m.group('name').replace(' ', '_')
+
+        if adr_val > adr_max:
+            continue
 
         # expand arrays
         arr_m = re.match('([^]]*)\[(\d+)\]$', name)
