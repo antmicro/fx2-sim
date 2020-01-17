@@ -24,6 +24,8 @@ def parse_args():
     parser.add_argument('fx2regs', help='Path to fx2regs.h file')
     parser.add_argument('-w', '--width', default='4',
                         help='Width (in characters) of the hex value')
+    parser.add_argument('-i', '--ignore-macro', action='append', default=[],
+                        help='Ignore given macro (usefull to ignore _SBIT)')
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -41,6 +43,9 @@ if __name__ == "__main__":
 
     lines = []
     for m in matches:
+        if m.group('macro') in args.ignore_macro:
+            continue
+
         fmt = '{val:0%dx} {name}' % int(args.width)
         # avoid eval() assuming we always have hex or hex + dec
         adr = m.group('address')
