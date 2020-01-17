@@ -1,0 +1,10 @@
+# ram read select
+000 don't_c
+000 registers
+001 indirect_addressing_(op2)
+010 direct_addressing
+011 stack_pointer
+100 b_register
+101 data_pointer
+110 program_status_word
+111 acc

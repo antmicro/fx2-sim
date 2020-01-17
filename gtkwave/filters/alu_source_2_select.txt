@@ -1,0 +1,5 @@
+# alu source 2 select
+00 RAM
+01 accumulator
+10 8'h00
+11 OC8051_AS2_OP2

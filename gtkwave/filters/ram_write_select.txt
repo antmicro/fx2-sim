@@ -1,0 +1,9 @@
+# ram write select
+000 OC8051_RWS_DC
+000 registers
+001 direct_addressing
+010 indirect_addressing
+011 stack_pointer
+101 direct_address_(op3)
+110 direct_address_(op1)
+111 b_register

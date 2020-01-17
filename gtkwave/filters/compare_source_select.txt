@@ -1,0 +1,6 @@
+# compare source select
+00 eq_=_accumulator_==_zero
+01 don't_care
+01 eq_=_destination_==_zero
+10 eq_=_cy
+11 eq_=_b_in

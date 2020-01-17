@@ -1,0 +1,13 @@
+# sfr bit addresses
+10000 port_0
+10001 timer/counter_control
+10010 port_1
+10011 serial_control
+10100 port_2
+10101 interrupt_enable_control_0
+10110 port_3
+10111 interrupt_priority_control_0
+11001 timer/counter2_control
+11010 program_status_word
+11100 accumulator
+11110 b_register

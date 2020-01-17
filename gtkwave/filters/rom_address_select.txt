@@ -1,0 +1,3 @@
+# rom address select
+0 program_counter
+1 alu_destination

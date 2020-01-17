@@ -1,0 +1,9 @@
+# pc in select
+000 alu_low
+000 dont_c
+001 alu_high
+010 relative_address,_op1
+011 relative_address,_op2
+100 11_bit_immediate
+101 16_bit_immediate
+110 alu_destination_{des2,_des1}

@@ -1,0 +1,5 @@
+# Timer_Counter modes
+00 mode_0
+01 mode_0
+10 mode_0
+11 mode_0

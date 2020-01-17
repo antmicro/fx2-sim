@@ -1,0 +1,4 @@
+# alu source 3 select
+0 OC8051_AS3_DC
+0 data_pointer
+1 program_clunter

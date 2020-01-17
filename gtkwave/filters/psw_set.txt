@@ -1,0 +1,5 @@
+# psw set
+00 DONT
+01 only_carry
+10 carry_and_overflov
+11 carry,_overflov_an_ac...

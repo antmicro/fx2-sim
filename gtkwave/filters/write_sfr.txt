@@ -1,0 +1,5 @@
+# write sfr
+00 no
+01 acc_destination_1
+10 acc_destination_2
+11 data_pointer

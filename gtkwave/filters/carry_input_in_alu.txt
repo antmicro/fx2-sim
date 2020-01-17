@@ -1,0 +1,6 @@
+# carry input in alu
+00 1'b0;
+00 carry_from_psw
+01 carry_from_psw
+10 carry_from_ram
+11 1'b1;

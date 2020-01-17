@@ -1,0 +1,7 @@
+# Interrupts
+03 external_interrupt_0
+0b T/C_0_owerflow_interrupt
+13 external_interrupt_1
+1b T/C_1_owerflow_interrupt
+23 uart_interrupt
+2b T/C_2_owerflow_interrupt

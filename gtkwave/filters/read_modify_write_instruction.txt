@@ -1,0 +1,3 @@
+# read_modify_write_instruction
+0 no
+1 yes

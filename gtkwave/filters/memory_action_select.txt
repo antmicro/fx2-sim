@@ -1,0 +1,7 @@
+# memory action select
+000 read_from_external_rom:_acc=(dptr)
+001 write_to_external_rom:_(dptr)=acc
+010 read_from_external_rom:_acc=(Ri)
+011 write_to_external_rom:_(Ri)=acc
+100 read_from_program_memory
+111 no_action

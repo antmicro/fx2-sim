@@ -1,0 +1,8 @@
+# interrupt sources
+000 no_interrupts
+001 EXTERNAL_INTERRUPT_0
+010 t/c_owerflov_0
+011 EXTERNAL_INTERRUPT_1
+100 t/c_owerflov_1
+101 UART_Interrupt
+110 t/c_owerflov_2
