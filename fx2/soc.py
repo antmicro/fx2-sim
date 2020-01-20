@@ -53,10 +53,11 @@ class FX2CRG(Module):
 
 
 class FX2USB(Module):
-    def __init__(self, csr_bank, platform):
-        self.csr_bank = csr_bank
+    def __init__(self, fx2):
+        self.fx2 = fx2 # backreference
+        csr_bank = self.fx2.csr_bank
 
-        usbirq = self.csr_bank.add(0xe65d, CSRStorage8(name='usbirq',fields=[
+        usbirq = csr_bank.add(0xe65d, CSRStorage8(name='usbirq',fields=[
             CSRField8(name='sudav',   size=1, offset=0, clear_on_write=True),
             CSRField8(name='sof',     size=1, offset=1, clear_on_write=True),
             CSRField8(name='sutok',   size=1, offset=2, clear_on_write=True),
@@ -66,22 +67,22 @@ class FX2USB(Module):
             CSRField8(name='ep0ack',  size=1, offset=6, clear_on_write=True),
         ]))
 
-        self.csr_bank.add(0xe6b8, CSRStorage(name='setupdat', size=8 * 8))
+        csr_bank.add(0xe6b8, CSRStorage(name='setupdat', size=8 * 8))
 
         # SOF frame number
-        self.csr_bank.add(0xe684, CSRStorage8(name='usbframeh', size=8))
-        self.csr_bank.add(0xe685, CSRStorage8(name='usbframel', size=8))
+        csr_bank.add(0xe684, CSRStorage8(name='usbframeh', size=8))
+        csr_bank.add(0xe685, CSRStorage8(name='usbframel', size=8))
 
-        self.csr_bank.add(0xe6a0, CSRStorage8(name='ep0cs', fields=[
+        csr_bank.add(0xe6a0, CSRStorage8(name='ep0cs', fields=[
             CSRField8(name='stall', offset=0),
             CSRField8(name='busy',  offset=1, access=CSRAccess.ReadOnly),  # set by hardware
             CSRField8(name='hsnak', offset=7, clear_on_write=True, reset=1),
         ]))
 
-        self.csr_bank.add(0xe68a, CSRStorage8(name='ep0bch', size=8))
-        self.csr_bank.add(0xe68b, CSRStorage8(name='ep0bcl', size=8))
+        csr_bank.add(0xe68a, CSRStorage8(name='ep0bch', size=8))
+        csr_bank.add(0xe68b, CSRStorage8(name='ep0bcl', size=8))
 
-        togctl = self.csr_bank.add(0xe683, CSRStorage8(name='togctl', fields=[
+        togctl = csr_bank.add(0xe683, CSRStorage8(name='togctl', fields=[
             CSRField8(name='ep', offset=0, size=4),
             CSRField8(name='io', offset=4),
             CSRField8(name='r',  offset=5, pulse=True),
@@ -123,6 +124,11 @@ class FX2USB(Module):
             If(togctl.fields.s, generate_ep_io_cases(lambda toggle: toggle.eq(DATA1)))
             .Elif(togctl.fields.r, generate_ep_io_cases(lambda toggle: toggle.eq(DATA0)))
         ]
+
+        # storage for autopointer data
+        csr_bank.add(0xe67b, CSRStorage8(name='xautodat1', size=8))
+        csr_bank.add(0xe67c, CSRStorage8(name='xautodat2', size=8))
+
 
 
 
@@ -184,4 +190,4 @@ class FX2(Module):
         slaves = [(slave.mem_decoder(), slave.bus) for slave in slaves] + (wb_slaves or [])
         self.submodules.wb_interconn = wishbone.InterconnectShared(masters, slaves, register=True)
 
-        self.submodules.usb = FX2USB(self.csr_bank, self.platform)
+        self.submodules.usb = FX2USB(self)
