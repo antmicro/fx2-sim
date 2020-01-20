@@ -67,6 +67,12 @@ class FX2USB(Module):
             CSRField8(name='ep0ack',  size=1, offset=6, clear_on_write=True),
         ]))
 
+        # setup token related registers
+        csr_bank.add(0xe6b3, CSRStorage(name='sudptrh', size=8))
+        csr_bank.add(0xe6b4, CSRStorage(name='sudptrl', size=8))
+        csr_bank.add(0xe6b5, CSRStorage(name='sudptrctl', fields=[
+            CSRField8(name='sdpauto', offset=0, reset=1)
+        ]))
         csr_bank.add(0xe6b8, CSRStorage(name='setupdat', size=8 * 8))
 
         # SOF frame number
