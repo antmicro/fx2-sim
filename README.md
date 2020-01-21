@@ -22,3 +22,29 @@ python -m fx2.sim firmware/8051/clkspd.bin
 
 Results can be viewed using GTKWave `gtkwave build/dut.vcd`,
 or starting from an already prepared GTKWave save `gtkwave gtkwave/sim.gtkw`.
+
+## Docker
+
+The simulation can be also run using the Dockerfile provided.
+First build the image, e.g.
+
+```
+docker build -t fx2-sim:v1 .
+```
+
+Then run a container:
+
+```
+docker run -it --rm fx2-sim:v1
+# inside container
+python3 -m fx2.sim firmware/main.bin
+```
+
+To store results locally:
+
+```
+mkdir -p build-docker
+docker run -it --rm -v $(pwd)/build-docker:/fx2-sim/build fx2-sim:v1 python3 -m fx2.sim firmware/main.bin
+```
+
+Note that running docker may require root privilages if user is not in the `docker` group.
