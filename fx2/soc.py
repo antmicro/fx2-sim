@@ -135,6 +135,10 @@ class FX2USB(Module):
         csr_bank.add(0xe67b, CSRStorage8(name='xautodat1', size=8))
         csr_bank.add(0xe67c, CSRStorage8(name='xautodat2', size=8))
 
+        csr_bank.add(0xe687, CSRStorage8(name='fnaddr', fields=[
+            CSRField8(name='fa', size=7, access=CSRAccess.ReadOnly)
+        ]))
+
 
 
 
