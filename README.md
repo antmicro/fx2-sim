@@ -3,6 +3,12 @@
 FX2 SoC simulation using Migen and Litex.
 The 8051 CPU implementation uses Verilog sources from [turbo8051](https://github.com/freecores/turbo8051).
 
+## Development state
+
+The project is still a work in progess.
+Some part of the implementation is in other repositories.
+See notes in [DEVELOPMENT.md](./DEVELOPMENT.md) for more information.
+
 ## Setup
 
 To install required dependencies run the script `setup.sh`.
